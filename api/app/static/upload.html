@@ -2,53 +2,106 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Upload para S3 com URL Pré-Assinada</title>
-</head>
-<body>
-    <h2>Upload de Imagem</h2>
+    <title>Upload para S3 - Fluxo Explicado</title>
 
-    <input type="file" id="fileInput" accept="image/*">
-    <button onclick="uploadFile()">Enviar</button>
-
-    <p id="status"></p>
-
-    <script>
-        async function uploadFile() {
-            const fileInput = document.getElementById("fileInput");
-            const status = document.getElementById("status");
-
-            if (!fileInput.files.length) {
-                status.textContent = "Selecione um arquivo primeiro!";
-                return;
-            }
-
-            const file = fileInput.files[0];
-            status.textContent = "Gerando URL pré-assinada...";
-
-            // 1) Solicita URL pré-assinada ao FastAPI
-            const res = await fetch(
-                `/generate-upload-url?file_name=${encodeURIComponent(file.name)}&file_type=${file.type}`
-            );
-            const data = await res.json();
-            const uploadUrl = data.upload_url;
-
-            // 2) Faz upload direto ao S3 usando PUT
-            status.textContent = "Enviando arquivo ao S3...";
-
-            const upload = await fetch(uploadUrl, {
-                method: "PUT",
-                body: file,
-                headers: {
-                    "Content-Type": file.type
-                }
-            });
-
-            if (upload.ok) {
-                status.textContent = "Upload concluído com sucesso!";
-            } else {
-                status.textContent = "Erro no upload: " + upload.status;
-            }
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .box { 
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            background: #f9f9f9;
         }
-    </script>
+        .log { 
+            background: #222; 
+            color: #0f0; 
+            padding: 10px; 
+            font-family: monospace; 
+            height: 180px; 
+            overflow-y: auto; 
+            white-space: pre-wrap;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Upload para S3 (Fluxo Passo a Passo)</h2>
+
+    <div class="box">
+        <p><strong>1) Escolha uma imagem:</strong></p>
+        <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="box">
+        <p>
+            <strong>2) Clique em enviar:</strong><br>
+            O navegador irá:<br>
+            • chamar <code>/generate-upload-url</code><br>
+            • receber a URL pré-assinada gerada pelo Python (FastAPI)<br>
+            • enviar a imagem diretamente ao S3 via PUT<br>
+        </p>
+        <button onclick="uploadFile()">Enviar</button>
+    </div>
+
+    <div class="box">
+        <p><strong>Log do fluxo:</strong></p>
+        <div id="log" class="log"></div>
+    </div>
+
+<script>
+    function log(msg) {
+        const box = document.getElementById("log");
+        box.textContent += msg + "\n";
+        box.scrollTop = box.scrollHeight;
+    }
+
+    async function uploadFile() {
+        const fileInput = document.getElementById("fileInput");
+
+        if (!fileInput.files.length) {
+            log("Nenhum arquivo selecionado.");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        log("1) Arquivo selecionado: " + file.name + " (" + file.type + ")");
+
+        // ----------------------------------------
+        // PASSO 2: Solicitar URL pré-assinada ao backend Python
+        // ----------------------------------------
+        log("2) Solicitando URL pré-assinada ao backend...");
+
+        const res = await fetch(
+            `/generate-upload-url?file_name=${encodeURIComponent(file.name)}&file_type=${file.type}`
+        );
+
+        const data = await res.json();
+        const uploadUrl = data.upload_url;
+
+        log("✔ URL pré-assinada recebida:");
+        log(uploadUrl);
+        log("");
+
+        // ----------------------------------------
+        // PASSO 3: Upload direto ao S3
+        // ----------------------------------------
+        log("3) Enviando arquivo ao S3 via PUT...");
+
+        const upload = await fetch(uploadUrl, {
+            method: "PUT",
+            body: file,
+            headers: { "Content-Type": file.type }
+        });
+
+        if (upload.ok) {
+            log("✔ Upload concluído com sucesso!");
+        } else {
+            log("❌ Erro no upload: " + upload.status);
+        }
+    }
+</script>
+
 </body>
 </html>
