@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload para S3 com URL Pré-Assinada</title>
+</head>
+<body>
+    <h2>Upload de Imagem</h2>
+
+    <input type="file" id="fileInput" accept="image/*">
+    <button onclick="uploadFile()">Enviar</button>
+
+    <p id="status"></p>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            const status = document.getElementById("status");
+
+            if (!fileInput.files.length) {
+                status.textContent = "Selecione um arquivo primeiro!";
+                return;
+            }
+
+            const file = fileInput.files[0];
+            status.textContent = "Gerando URL pré-assinada...";
+
+            // 1) Solicita URL pré-assinada ao FastAPI
+            const res = await fetch(
+                `/generate-upload-url?file_name=${encodeURIComponent(file.name)}&file_type=${file.type}`
+            );
+            const data = await res.json();
+            const uploadUrl = data.upload_url;
+
+            // 2) Faz upload direto ao S3 usando PUT
+            status.textContent = "Enviando arquivo ao S3...";
+
+            const upload = await fetch(uploadUrl, {
+                method: "PUT",
+                body: file,
+                headers: {
+                    "Content-Type": file.type
+                }
+            });
+
+            if (upload.ok) {
+                status.textContent = "Upload concluído com sucesso!";
+            } else {
+                status.textContent = "Erro no upload: " + upload.status;
+            }
+        }
+    </script>
+</body>
+</html>
