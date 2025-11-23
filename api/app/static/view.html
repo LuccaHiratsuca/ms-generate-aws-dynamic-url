@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualizar Imagem</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #f0f2f5;
+        }
+
+        header {
+            background: #1a73e8;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        nav a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #0002;
+            text-align: center;
+        }
+
+        img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Visualizar Imagem</h1>
+    <nav>
+        <a href="/home">Home</a>
+        <a href="/upload">Upload</a>
+        <a href="/list">Listar</a>
+    </nav>
+</header>
+
+<div class="container">
+    <h2>Visualização</h2>
+
+    <p><i>(Página aguardando backend real)</i></p>
+
+    <div id="result"></div>
+</div>
+
+<script>
+// Quando o backend existir, pegar o ID da URL:
+// const id = new URLSearchParams(window.location.search).get('id');
+// fetch(`/images/${id}`)
+function loadImage() {
+    console.log("Visualização aguardando backend real...");
+}
+loadImage();
+</script>
+
+</body>
+</html>

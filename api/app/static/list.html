@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Listar Imagens</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #f0f2f5;
+        }
+
+        header {
+            background: #1a73e8;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+            margin-left: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #0002;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            background: #fafafa;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #e7e7e7;
+        }
+
+        button {
+            padding: 8px 15px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Listar Imagens</h1>
+    <nav>
+        <a href="/home">Home</a>
+        <a href="/upload">Upload</a>
+        <a href="/list">Listar</a>
+    </nav>
+</header>
+
+<div class="container">
+    <h2>Imagens Disponíveis</h2>
+
+    <p><i>(Esta página ainda é apenas um TEMPLATE aguardando o backend real)</i></p>
+
+    <table id="table">
+        <tr>
+            <th>ID</th>
+            <th>Tipo</th>
+            <th>Ações</th>
+        </tr>
+    </table>
+</div>
+
+<script>
+// Quando os endpoints reais existirem,
+// substitua esta função por:
+// fetch('/images').then(...)
+function loadImages() {
+    console.log("Listagem aguardando backend real...");
+}
+loadImages();
+</script>
+
+</body>
+</html>

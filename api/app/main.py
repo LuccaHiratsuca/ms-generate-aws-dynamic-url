@@ -2,17 +2,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-
 import socket
-
 from api.app.aws import generate_presigned_url
 from api.app.config import APP_PORT
 
+
+# ====================================================
+# Inicialização da Aplicação
+# ====================================================
 app = FastAPI()
 
-# ----------------------------------------------------
-# CORS
-# ----------------------------------------------------
+
+# ====================================================
+# Configuração de CORS
+# ====================================================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,22 +23,44 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# ----------------------------------------------------
-# Servindo arquivos estáticos (HTML)
-# ----------------------------------------------------
+
+# ====================================================
+# Arquivos Estáticos (HTML, CSS, JS)
+# ====================================================
 app.mount("/static", StaticFiles(directory="api/app/static"), name="static")
+
+
+# ----------------------------------------------------
+# Páginas HTML
+# ----------------------------------------------------
+@app.get("/home", response_class=HTMLResponse)
+def home_page():
+    """Página inicial da área de clientes."""
+    with open("api/app/static/home.html", "r", encoding="utf-8") as f:
+        return f.read()
 
 @app.get("/upload", response_class=HTMLResponse)
 def upload_page():
-    """
-    Página simples de upload.
-    """
+    """Página de upload de imagens."""
     with open("api/app/static/upload.html", "r", encoding="utf-8") as f:
         return f.read()
 
-# ----------------------------------------------------
-# HEALTH CHECK (ALB)
-# ----------------------------------------------------
+@app.get("/list", response_class=HTMLResponse)
+def list_page():
+    """Página de listagem de imagens."""
+    with open("api/app/static/list.html", "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/view", response_class=HTMLResponse)
+def view_page():
+    """Página de visualização de imagem."""
+    with open("api/app/static/view.html", "r", encoding="utf-8") as f:
+        return f.read()
+
+
+# ====================================================
+# API – Health Check (usado pelo ALB)
+# ====================================================
 @app.get("/health")
 def health():
     hostname = socket.gethostname()
@@ -44,13 +69,14 @@ def health():
         "instance": hostname
     }
 
-# ----------------------------------------------------
-# ROTA PARA URL PRÉ-ASSINADA
-# ----------------------------------------------------
+
+# ====================================================
+# API – Geração de URL Pré-assinada (Upload para S3)
+# ====================================================
 @app.get("/generate-upload-url")
 def generate_url(file_name: str, file_type: str):
     """
-    Recebe nome e tipo do arquivo e devolve URL pré-assinada.
+    Gera uma URL pré-assinada para upload direto ao S3.
     """
     url = generate_presigned_url(file_name, file_type)
     hostname = socket.gethostname()
@@ -59,11 +85,13 @@ def generate_url(file_name: str, file_type: str):
         "instance": hostname
     }
 
-# ----------------------------------------------------
-# ROOT
-# ----------------------------------------------------
+
+# ====================================================
+# Rota Raiz / Diagnóstico
+# ====================================================
 @app.get("/")
 def root():
+    """Diagnóstico simples para verificar se a API está no ar."""
     return {
         "message": "FastAPI rodando com sucesso!",
         "instance": socket.gethostname()

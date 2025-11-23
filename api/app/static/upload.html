@@ -2,105 +2,109 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Upload para S3 - Fluxo Explicado</title>
+    <title>Upload para S3</title>
 
     <style>
-        body { font-family: Arial; padding: 20px; }
-        .box { 
-            border: 1px solid #ccc;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            background: #f9f9f9;
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
         }
-        .log { 
-            background: #222; 
-            color: #0f0; 
-            padding: 10px; 
-            font-family: monospace; 
-            height: 180px; 
-            overflow-y: auto; 
-            white-space: pre-wrap;
+
+        header {
+            background: #1a73e8;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px #0002;
+        }
+
+        button {
+            padding: 12px 20px;
+            background: #1a73e8;
+            color: white;
+            border: none;
             border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #155ac1;
+        }
+
+        #log {
+            margin-top: 20px;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-line;
         }
     </style>
 </head>
 
 <body>
-    <h2>Upload para S3 (Fluxo Passo a Passo)</h2>
 
-    <div class="box">
-        <p><strong>1) Escolha uma imagem:</strong></p>
-        <input type="file" id="fileInput" accept="image/*">
-    </div>
+<header>
+    <h1>Upload</h1>
+    <nav>
+        <a href="/home">Home</a>
+        <a href="/upload">Upload</a>
+        <a href="/list">Listar</a>
+    </nav>
+</header>
 
-    <div class="box">
-        <p>
-            <strong>2) Clique em enviar:</strong><br>
-            O navegador irá:<br>
-            • chamar <code>/generate-upload-url</code><br>
-            • receber a URL pré-assinada gerada pelo Python (FastAPI)<br>
-            • enviar a imagem diretamente ao S3 via PUT<br>
-        </p>
-        <button onclick="uploadFile()">Enviar</button>
-    </div>
+<div class="container">
+    <h2>Enviar Imagem</h2>
 
-    <div class="box">
-        <p><strong>Log do fluxo:</strong></p>
-        <div id="log" class="log"></div>
-    </div>
+    <input type="file" id="input-file">
+
+    <button onclick="uploadFile()">Enviar</button>
+
+    <div id="log"></div>
+</div>
 
 <script>
-    function log(msg) {
-        const box = document.getElementById("log");
-        box.textContent += msg + "\n";
-        box.scrollTop = box.scrollHeight;
-    }
+async function uploadFile() {
+    const log = msg => document.getElementById("log").innerHTML += msg + "\n";
 
-    async function uploadFile() {
-        const fileInput = document.getElementById("fileInput");
+    const file = document.getElementById("input-file").files[0];
+    if (!file) return log("Selecione um arquivo primeiro.");
 
-        if (!fileInput.files.length) {
-            log("Nenhum arquivo selecionado.");
-            return;
-        }
+    log(`Arquivo: ${file.name} (${file.type})`);
+    log("Solicitando URL pré-assinada...");
 
-        const file = fileInput.files[0];
-        log("1) Arquivo selecionado: " + file.name + " (" + file.type + ")");
+    const res = await fetch(`/generate-upload-url?file_name=${file.name}&file_type=${file.type}`);
+    const data = await res.json();
+    const url = data.upload_url;
 
-        // ----------------------------------------
-        // PASSO 2: Solicitar URL pré-assinada ao backend Python
-        // ----------------------------------------
-        log("2) Solicitando URL pré-assinada ao backend...");
+    log("URL recebida. Enviando para o S3...");
 
-        const res = await fetch(
-            `/generate-upload-url?file_name=${encodeURIComponent(file.name)}&file_type=${file.type}`
-        );
+    const r = await fetch(url, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type }
+    });
 
-        const data = await res.json();
-        const uploadUrl = data.upload_url;
-
-        log("✔ URL pré-assinada recebida:");
-        log(uploadUrl);
-        log("");
-
-        // ----------------------------------------
-        // PASSO 3: Upload direto ao S3
-        // ----------------------------------------
-        log("3) Enviando arquivo ao S3 via PUT...");
-
-        const upload = await fetch(uploadUrl, {
-            method: "PUT",
-            body: file,
-            headers: { "Content-Type": file.type }
-        });
-
-        if (upload.ok) {
-            log("✔ Upload concluído com sucesso!");
-        } else {
-            log("❌ Erro no upload: " + upload.status);
-        }
-    }
+    if (r.ok) log("✔ Upload concluído com sucesso!");
+    else log("❌ Erro no upload: " + r.status);
+}
 </script>
 
 </body>
