@@ -2,13 +2,13 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Upload para S3</title>
+    <title>Upload de Imagem para S3</title>
 
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #f0f2f5;
+            background: #eef2f7;
         }
 
         header {
@@ -20,23 +20,57 @@
             align-items: center;
         }
 
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
         nav a {
             color: white;
             margin-left: 20px;
             text-decoration: none;
+            font-weight: bold;
         }
 
+        nav a:hover { text-decoration: underline; }
+
         .container {
-            max-width: 700px;
+            max-width: 800px;
             margin: 40px auto;
+            background: #fff;
             padding: 30px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px #0002;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px #0002;
+        }
+
+        h2 { margin-top: 0; }
+
+        .step {
+            margin-bottom: 25px;
+            padding: 18px;
+            border-left: 5px solid #ccc;
+            background: #f9f9f9;
+            border-radius: 6px;
+        }
+
+        .step.ok     { border-color: #1a73e8; }
+        .step.error  { border-color: #c62828; }
+
+        .hidden { display: none; }
+
+        #presigned-url {
+            word-break: break-all;
+            font-size: 14px;
+            background: #f2f6ff;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #cbd6f1;
+            margin-top: 8px;
         }
 
         button {
-            padding: 12px 20px;
+            padding: 14px 18px;
+            font-size: 16px;
             background: #1a73e8;
             color: white;
             border: none;
@@ -44,25 +78,37 @@
             cursor: pointer;
         }
 
-        button:hover {
-            background: #155ac1;
-        }
+        button:hover { background: #155ac1; }
 
         #log {
-            margin-top: 20px;
-            background: #f5f5f5;
-            padding: 15px;
+            background: #0d1117;
+            color: #e6edf3;
+            padding: 18px;
             border-radius: 8px;
+            margin-top: 25px;
             font-family: monospace;
-            white-space: pre-line;
+            white-space: pre-wrap;
+            font-size: 14px;
         }
+
+        .status-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-left: 6px;
+        }
+
+        .tag-pending { background: #ffecb3; color: #8d6e00; }
+        .tag-ok      { background: #c8e6c9; color: #256029; }
+        .tag-error   { background: #ffcdd2; color: #b71c1c; }
     </style>
 </head>
 
 <body>
 
 <header>
-    <h1>Upload</h1>
+    <h1>Upload de Imagem</h1>
     <nav>
         <a href="/home">Home</a>
         <a href="/upload">Upload</a>
@@ -71,39 +117,110 @@
 </header>
 
 <div class="container">
-    <h2>Enviar Imagem</h2>
 
-    <input type="file" id="input-file">
+    <h2>Enviar Imagem para o S3</h2>
 
-    <button onclick="uploadFile()">Enviar</button>
+    <div class="step" id="step1">
+        <strong>1) Selecionar arquivo</strong>
+        <span class="status-tag tag-pending" id="tag-step1">Aguardando</span>
+        <br><br>
+        <input type="file" id="file-input" accept="image/*">
+    </div>
 
-    <div id="log"></div>
+    <div class="step" id="step2">
+        <strong>2) Solicitar URL pré-assinada ao backend</strong>
+        <span class="status-tag tag-pending" id="tag-step2">Aguardando</span>
+        <div id="presigned-url" class="hidden"></div>
+    </div>
+
+    <div class="step" id="step3">
+        <strong>3) Enviar imagem direto para o S3 via PUT</strong>
+        <span class="status-tag tag-pending" id="tag-step3">Aguardando</span>
+    </div>
+
+    <button onclick="startUpload()">Enviar arquivo</button>
+
+    <h3>Log do processo</h3>
+    <div id="log">Aguardando ação...</div>
+
 </div>
 
 <script>
-async function uploadFile() {
-    const log = msg => document.getElementById("log").innerHTML += msg + "\n";
+function log(msg) {
+    document.getElementById("log").innerHTML += msg + "\n";
+}
 
-    const file = document.getElementById("input-file").files[0];
-    if (!file) return log("Selecione um arquivo primeiro.");
+function setStatus(step, type) {
+    const tag = document.getElementById("tag-" + step);
+    tag.classList.remove("tag-pending", "tag-ok", "tag-error");
 
-    log(`Arquivo: ${file.name} (${file.type})`);
-    log("Solicitando URL pré-assinada...");
+    if (type === "ok") {
+        tag.classList.add("tag-ok");
+        tag.textContent = "Concluído";
+    } else if (type === "error") {
+        tag.classList.add("tag-error");
+        tag.textContent = "Erro";
+    } else {
+        tag.classList.add("tag-pending");
+        tag.textContent = "Aguardando";
+    }
+}
 
-    const res = await fetch(`/generate-upload-url?file_name=${file.name}&file_type=${file.type}`);
-    const data = await res.json();
-    const url = data.upload_url;
+async function startUpload() {
 
-    log("URL recebida. Enviando para o S3...");
+    // STEP 1 ---------------------------------------------
+    const file = document.getElementById("file-input").files[0];
+    if (!file) {
+        alert("Selecione um arquivo primeiro.");
+        return;
+    }
 
-    const r = await fetch(url, {
-        method: "PUT",
-        body: file,
-        headers: { "Content-Type": file.type }
-    });
+    setStatus("step1", "ok");
+    log(`✔ Arquivo selecionado: ${file.name} (${file.type})`);
 
-    if (r.ok) log("✔ Upload concluído com sucesso!");
-    else log("❌ Erro no upload: " + r.status);
+    // STEP 2 ---------------------------------------------
+    log("🔄 Solicitando URL pré-assinada ao backend...");
+
+    let url;
+    try {
+        const res = await fetch(`/generate-upload-url?file_name=${file.name}&file_type=${file.type}`);
+        const data = await res.json();
+        url = data.upload_url;
+
+        setStatus("step2", "ok");
+        log("✔ URL pré-assinada recebida.");
+
+        const urlBox = document.getElementById("presigned-url");
+        urlBox.classList.remove("hidden");
+        urlBox.textContent = url;
+
+    } catch (err) {
+        setStatus("step2", "error");
+        log("❌ Erro ao solicitar URL pré-assinada.");
+        return;
+    }
+
+    // STEP 3 ---------------------------------------------
+    log("🔄 Enviando arquivo ao S3 via PUT...");
+
+    try {
+        const upload = await fetch(url, {
+            method: "PUT",
+            body: file,
+            headers: { "Content-Type": file.type }
+        });
+
+        if (upload.ok) {
+            setStatus("step3", "ok");
+            log("✔ Upload concluído com sucesso!");
+        } else {
+            throw new Error(upload.status);
+        }
+
+    } catch (err) {
+        setStatus("step3", "error");
+        log("❌ Falha no upload para o S3.");
+    }
 }
 </script>
 
