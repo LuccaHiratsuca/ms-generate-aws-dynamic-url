@@ -8,7 +8,7 @@ def generate_presigned_url(file_name: str, file_type: str):
         ClientMethod="put_object",
         Params={
             "Bucket": BUCKET_NAME,
-            "Key": file_name,
+            "Key": f"images/{file_name}",
             "ContentType": file_type
         },
         ExpiresIn=3600
