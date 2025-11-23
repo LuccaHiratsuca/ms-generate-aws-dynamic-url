@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from api.app.aws import generate_presigned_url
-from api.app.config import APP_PORT
+from aws import generate_presigned_url 
+from config import APP_PORT
 import socket
 
 app = FastAPI()

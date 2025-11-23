@@ -1,5 +1,5 @@
 import boto3
-from api.app.config import BUCKET_NAME, AWS_REGION
+from config import BUCKET_NAME, AWS_REGION
 
 s3 = boto3.client("s3", region_name=AWS_REGION)
 
