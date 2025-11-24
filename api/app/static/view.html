@@ -3,45 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <title>Visualizar Imagem</title>
+
     <style>
-        body { font-family: Arial; padding: 40px; }
-        img { max-width: 600px; border: 1px solid #ccc; }
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #f0f2f5;
+        }
+
+        header {
+            background: #1a73e8;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 12px #0002;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: #1a73e8;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            background: #155bc7;
+        }
+
+        img {
+            max-width: 100%;
+            margin-top: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 8px #0001;
+        }
+
+        .meta {
+            font-size: 16px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 
 <body>
-    <a href="/list">⬅ Voltar</a>
-    <h1>Imagem</h1>
 
-    <div id="info"></div>
+<header>
+    <h1>Visualizar Imagem</h1>
+    <nav>
+        <a href="/home">Home</a>
+        <a href="/upload">Upload</a>
+        <a href="/list">Listar</a>
+    </nav>
+</header>
+
+<div class="container">
+    
+    <a class="back-btn" href="/list">⬅ Voltar</a>
+
+    <h2>Detalhes da Imagem</h2>
+
+    <div id="info" class="meta"></div>
+
     <img id="image" />
 
-    <script>
-        function getParam(name) {
-            return new URLSearchParams(window.location.search).get(name);
-        }
+</div>
 
-        async function loadImage() {
-            const id = getParam("imageId");
+<script>
+    function getParam(name) {
+        return new URLSearchParams(window.location.search).get(name);
+    }
 
-            const res = await fetch(`/api/get-image/${id}`);
-            const data = await res.json();
+    async function loadImage() {
+        const id = getParam("imageId");
 
-            const meta = data.metadata;
-            const img = data.base64;
+        const res = await fetch(`/api/get-image/${id}`);
+        const data = await res.json();
 
-            document.getElementById("info").innerHTML = `
-                <p><b>ID:</b> ${meta.imageId}</p>
-                <p><b>Tipo:</b> ${meta.contentType}</p>
-                <p><b>Criada em:</b> ${meta.createdAt}</p>
-                <p><b>Tamanho:</b> ${(meta.sizeBytes/1024).toFixed(2)} KB</p>
-            `;
+        const meta = data.metadata;
+        const img = data.base64;
 
-            document.getElementById("image").src =
-                `data:${meta.contentType};base64,${img}`;
-        }
+        document.getElementById("info").innerHTML = `
+            <p><b>ID:</b> ${meta.imageId}</p>
+            <p><b>Tipo:</b> ${meta.contentType}</p>
+            <p><b>Criada em:</b> ${meta.createdAt}</p>
+            <p><b>Tamanho:</b> ${(meta.sizeBytes / 1024).toFixed(2)} KB</p>
+        `;
 
-        loadImage();
-    </script>
+        document.getElementById("image").src =
+            `data:${meta.contentType};base64,${img}`;
+    }
+
+    loadImage();
+</script>
+
 </body>
 </html>

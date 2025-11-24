@@ -3,55 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <title>Lista de Imagens</title>
+
     <style>
-        body { font-family: Arial; padding: 40px; }
-        .card { 
-            padding: 12px; 
-            background: #f1f1f1; 
-            margin-bottom: 10px; 
-            border-radius: 8px; 
-            cursor: pointer; 
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #f0f2f5;
         }
-        .card:hover { background: #e0e0e0; }
+
+        header {
+            background: #1a73e8;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 12px #0002;
+        }
+
+        h1, h2 {
+            margin: 0;
+        }
+
+        .card {
+            padding: 16px;
+            background: #fafafa;
+            margin-bottom: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .card:hover {
+            background: #f0f0f0;
+            transform: scale(1.01);
+        }
+
+        .empty {
+            margin-top: 20px;
+            color: #555;
+            font-size: 16px;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Imagens Armazenadas</h1>
+
+<header>
+    <h1>Listar Imagens</h1>
+    <nav>
+        <a href="/home">Home</a>
+        <a href="/upload">Upload</a>
+        <a href="/list">Listar</a>
+    </nav>
+</header>
+
+<div class="container">
+    <h2>Imagens Armazenadas</h2>
     <div id="list"></div>
+</div>
 
-    <script>
-        async function loadList() {
-            const res = await fetch("/api/list-images");
-            
-            const data = await res.json();
+<script>
+    async function loadList() {
+        const res = await fetch("/api/list-images");
+        const data = await res.json();
 
-            const container = document.getElementById("list");
+        const container = document.getElementById("list");
 
-            if (!data.images || data.images.length === 0) {
-                container.innerHTML = "<p>Nenhuma imagem encontrada.</p>";
-                return;
-            }
-
-            for (const img of data.images) {
-                const div = document.createElement("div");
-                div.className = "card";
-                div.onclick = () => {
-                    window.location.href = `/view?imageId=${img.imageId}`;
-                };
-
-                div.innerHTML = `
-                    <b>ID:</b> ${img.imageId}<br>
-                    <b>Tipo:</b> ${img.contentType}<br>
-                    <b>Tamanho:</b> ${(img.sizeBytes / 1024).toFixed(2)} KB<br>
-                    <b>Criada em:</b> ${img.createdAt}
-                `;
-
-                container.appendChild(div);
-            }
+        if (!data.images || data.images.length === 0) {
+            container.innerHTML = "<p class='empty'>Nenhuma imagem encontrada.</p>";
+            return;
         }
 
-        loadList();
-    </script>
+        for (const img of data.images) {
+            const div = document.createElement("div");
+            div.className = "card";
+            div.onclick = () => {
+                window.location.href = `/view?imageId=${img.imageId}`;
+            };
+
+            div.innerHTML = `
+                <b>ID:</b> ${img.imageId}<br>
+                <b>Tipo:</b> ${img.contentType}<br>
+                <b>Tamanho:</b> ${(img.sizeBytes / 1024).toFixed(2)} KB<br>
+                <b>Criada em:</b> ${img.createdAt}
+            `;
+
+            container.appendChild(div);
+        }
+    }
+
+    loadList();
+</script>
+
 </body>
 </html>
