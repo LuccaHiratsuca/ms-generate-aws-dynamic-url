@@ -1,5 +1,9 @@
 from fastapi import FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+import socket
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 import socket
@@ -14,6 +18,7 @@ app = FastAPI(debug=True)
 
 from api.app.aws import router
 app.include_router(router)
+
 
 # ====================================================
 # Configuração de CORS
@@ -34,7 +39,36 @@ app.mount("/static", StaticFiles(directory="api/app/static"), name="static")
 
 # ----------------------------------------------------
 # Páginas HTML
+# Páginas HTML
 # ----------------------------------------------------
+@app.get("/home", response_class=HTMLResponse)
+def home_page():
+    """Página inicial da área de clientes."""
+    with open("api/app/static/home.html", "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/upload", response_class=HTMLResponse)
+def upload_page():
+    """Página de upload de imagens."""
+    with open("api/app/static/upload.html", "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/list", response_class=HTMLResponse)
+def list_page():
+    """Página de listagem de imagens."""
+    with open("api/app/static/list.html", "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/view", response_class=HTMLResponse)
+def view_page():
+    """Página de visualização de imagem."""
+    with open("api/app/static/view.html", "r", encoding="utf-8") as f:
+        return f.read()
+
+
+# ====================================================
+# API – Health Check (usado pelo ALB)
+# ====================================================
 @app.get("/home", response_class=HTMLResponse)
 def home_page():
     """Página inicial da área de clientes."""
