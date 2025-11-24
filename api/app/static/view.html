@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualizar Imagem</title>
+    <style>
+        body { font-family: Arial; padding: 40px; }
+        img { max-width: 600px; border: 1px solid #ccc; }
+    </style>
+</head>
+
+<body>
+    <a href="/list">⬅ Voltar</a>
+    <h1>Imagem</h1>
+
+    <div id="info"></div>
+    <img id="image" />
+
+    <script>
+        function getParam(name) {
+            return new URLSearchParams(window.location.search).get(name);
+        }
+
+        async function loadImage() {
+            const id = getParam("imageId");
+
+            const res = await fetch(`/api/get-image/${id}`);
+            const data = await res.json();
+
+            const meta = data.metadata;
+            const img = data.base64;
+
+            document.getElementById("info").innerHTML = `
+                <p><b>ID:</b> ${meta.imageId}</p>
+                <p><b>Tipo:</b> ${meta.contentType}</p>
+                <p><b>Criada em:</b> ${meta.createdAt}</p>
+                <p><b>Tamanho:</b> ${(meta.sizeBytes/1024).toFixed(2)} KB</p>
+            `;
+
+            document.getElementById("image").src =
+                `data:${meta.contentType};base64,${img}`;
+        }
+
+        loadImage();
+    </script>
+</body>
+</html>

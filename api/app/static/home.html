@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Área de Clientes - Demay’s Infra Company</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        header {
+            background: #1a73e8;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        nav a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .hero h2 {
+            font-size: 34px;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            max-width: 700px;
+            margin: 10px auto;
+            font-size: 18px;
+            color: #555;
+        }
+
+        .section {
+            padding: 50px 40px;
+        }
+
+        .section h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+
+        .texto {
+            max-width: 900px;
+            margin: auto;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn a {
+            background: #1a73e8;
+            padding: 15px 30px;
+            color: white;
+            border-radius: 8px;
+            font-size: 18px;
+            text-decoration: none;
+        }
+
+        .btn a:hover {
+            background: #155ac1;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #1a73e8;
+            color: white;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Área de Clientes</h1>
+    <nav>
+        <a href="/home">Home</a>
+        <a href="/upload">Upload</a>
+        <a href="/list">Listar Imagens</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <h2>Bem-vindo à Área de Clientes</h2>
+    <p>
+        Aqui você pode enviar suas imagens para processamento, listar arquivos já armazenados
+        e visualizar resultados convertidos em Base64.
+    </p>
+</section>
+
+<section id="historia" class="section">
+    <h3>História da Empresa</h3>
+    <div class="texto">
+        <p>
+            A Demay’s Infra Company nasceu com a missão de construir soluções de computação
+            em nuvem escaláveis, resilientes e seguras. Nossa plataforma de conversão de imagens
+            demonstra nosso compromisso com inovação e excelência técnica.
+        </p>
+    </div>
+</section>
+
+<section id="grupo" class="section">
+    <h3>Sobre o Grupo</h3>
+    <div class="texto">
+        <p>
+            Este projeto foi desenvolvido como parte da disciplina de Computação em Nuvem. 
+            Nossa equipe é formada por estudantes comprometidos com alto padrão técnico 
+            e boas práticas de engenharia.
+        </p>
+    </div>
+</section>
+
+<div class="btn">
+    <a href="/upload">Ir para Upload de Imagens</a>
+</div>
+
+<footer>
+    © 2025 Demay’s Infra Company — Projeto Insper
+</footer>
+
+</body>
+</html>
