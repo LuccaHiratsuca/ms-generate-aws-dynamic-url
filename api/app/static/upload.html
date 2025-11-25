@@ -219,10 +219,10 @@ async function startUpload() {
 
     } catch (err) {
         setStatus("step3", "error");
+        log(err)
         log("❌ Falha no upload para o S3.");
     }
 }
 </script>
-
 </body>
 </html>
